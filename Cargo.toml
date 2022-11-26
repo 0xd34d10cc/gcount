@@ -1,0 +1,15 @@
+[package]
+name = "gcount"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+chrono = { version = "0.4.23", features = ["serde"] }
+eframe = { version = "0.19.0", features = ["persistence"] }
+inputbot = { git = "https://github.com/obv-mikhail/InputBot", branch = "develop" }
+serde = { version = "1.0.147", features = ["derive"] }
+windows = { version = "0.43.0", features = [
+    "Win32_Foundation",
+    "Win32_UI_WindowsAndMessaging",
+    "Win32_System_Threading",
+    "Win32_System_ProcessStatus"] }
