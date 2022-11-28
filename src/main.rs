@@ -3,7 +3,7 @@
 use chrono::{NaiveDate, Utc};
 use eframe::egui;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 
 static ACTIVE: AtomicBool = AtomicBool::new(false);
@@ -59,15 +59,20 @@ fn monitor_activity(active: &AtomicBool, exe_name: &str) {
 
 #[derive(Default, Serialize, Deserialize)]
 struct GCount {
-    counts: HashMap<NaiveDate, usize>,
+    counts: BTreeMap<NaiveDate, usize>,
+
+    #[serde(skip)]
+    total: usize,
 }
 
 impl GCount {
     fn new(context: &eframe::CreationContext<'_>) -> Self {
-        context
+        let mut this: GCount = context
             .storage
             .and_then(|storage| eframe::get_value(storage, "gcount"))
-            .unwrap_or_default()
+            .unwrap_or_default();
+        this.total = this.counts.values().sum();
+        this
     }
 }
 
@@ -83,10 +88,13 @@ impl eframe::App for GCount {
             let today = Utc::now().naive_utc().date();
             let count = self.counts.entry(today).or_insert(0);
             *count += clicks;
+            self.total += clicks;
         }
 
         egui::CentralPanel::default().show(ctx, |ui| {
-            for (date, count) in self.counts.iter() {
+            ui.label(format!("Total: {}", self.total));
+            ui.separator();
+            for (date, count) in self.counts.iter().rev() {
                 ui.label(format!("{}: {}", date, count));
             }
         });
